@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Dotted Font Maker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: a ruled practice sheet carries the live specimen; one quiet strip of controls sits beside it (below it on phones). */
+:root {
+  --bg: #e9eef5;
+  --paper: #fbfcfe;
+  --ink: #16233f;
+  --muted: #56647d;
+  --line: #c9d3e1;
+  --rule: #a9c6e8;
+  --base: #e0706c;
+  --ghost: #d5deea;
+  --accent: #1d5bbb;
+  --on-accent: #ffffff;
+  --field: #ffffff;
+  --alert: #a3302c;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141d1b; --paper: #1c2926; --ink: #edf3ee; --muted: #9eb2ab; --line: #32443f; --rule: #47645c;
+    --base: #d98a76; --ghost: #33453f; --accent: #f0c850; --on-accent: #1b2320; --field: #16201e; --alert: #f0a094;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141d1b; --paper: #1c2926; --ink: #edf3ee; --muted: #9eb2ab; --line: #32443f; --rule: #47645c;
+  --base: #d98a76; --ghost: #33453f; --accent: #f0c850; --on-accent: #1b2320; --field: #16201e; --alert: #f0a094;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 28px 56px; display: grid; gap: 20px; }
+
+.top h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.7rem); line-height: 1.05; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.top p { margin: 8px 0 0; color: var(--muted); max-width: 58ch; }
+
+.source { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 14px 16px; border: 1.5px dashed var(--line); border-radius: 8px; }
+.source.over { border-color: var(--accent); background: var(--paper); }
+.source-info { flex: 1 1 220px; min-width: 0; display: grid; gap: 2px; }
+.label { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.source-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-weight: 700; font-size: 1.1rem; overflow-wrap: anywhere; }
+.chip { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; }
+.source-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.hint { color: var(--muted); font-size: 0.9rem; }
+
+button { font: inherit; cursor: pointer; }
+.btn { border-radius: 6px; padding: 10px 16px; font-weight: 700; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--on-accent); width: 100%; padding-block: 13px; font-size: 1.02rem; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+
+.alert { margin: 0; color: var(--alert); font-weight: 700; }
+.notes { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; color: var(--muted); font-size: 0.92rem; }
+
+.work { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 880px) { .work { grid-template-columns: minmax(0, 1fr) 300px; } }
+
+.sheet { min-width: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.sheet-canvas { display: block; width: 100%; }
+canvas { display: block; }
+.group { display: grid; gap: 12px; min-width: 0; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label, .row label { font-size: 0.85rem; color: var(--muted); font-weight: 700; }
+input[type="text"] { font: inherit; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; width: 100%; min-width: 0; }
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; height: 24px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; color: var(--muted); }
+.check input { accent-color: var(--accent); width: 17px; height: 17px; margin: 0; }
+
+.panel { display: grid; gap: 22px; min-width: 0; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 8px; }
+legend { padding: 0; margin-bottom: 8px; }
+.opt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 11px 12px; border: 1.5px solid var(--line); border-radius: 8px; cursor: pointer; }
+.opt:has(input:checked) { border-color: var(--accent); background: var(--paper); }
+.opt input { accent-color: var(--accent); margin: 4px 0 0; width: 16px; height: 16px; }
+.opt-name { display: block; font-weight: 700; }
+.opt-desc { display: block; color: var(--muted); font-size: 0.9rem; line-height: 1.4; }
+
+.sliders { display: grid; gap: 14px; }
+.row { display: grid; gap: 2px; }
+.row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+output { font-variant-numeric: tabular-nums; font-weight: 700; }
+.fine { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
+.save { display: grid; gap: 10px; }
+.status { margin: 0; font-size: 0.92rem; color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; min-height: 1.4em; }
+.bar { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+
+.foot { color: var(--muted); font-size: 0.9rem; display: grid; gap: 4px; max-width: 70ch; }
+.foot p { margin: 0; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Dotted Font Maker</h1>
+    <p>Give it a font file and get the same font back with every letter drawn in dots.</p>
+  </header>
+
+  <section class="source" id="source" aria-label="Font to convert">
+    <div class="source-info">
+      <span class="label">Font</span>
+      <span class="source-name"><span id="font-name">Loading…</span><span class="chip" id="sample-chip" hidden>Sample</span></span>
+    </div>
+    <div class="source-pick">
+      <button class="btn" id="pick" type="button">Choose a font file</button>
+      <span class="hint">or drop a .ttf, .otf or .woff anywhere on the page</span>
+      <input type="file" id="file" accept=".ttf,.otf,.woff,.ttc,font/ttf,font/otf,font/woff" hidden>
+    </div>
+  </section>
+  <p class="alert" id="error" role="alert" hidden></p>
+  <ul class="notes" id="notes" hidden></ul>
+
+  <div class="work">
+    <section class="sheet" aria-label="Preview">
+      <div class="sheet-canvas" id="canvas-box">
+        <canvas id="preview" role="img" aria-label="The sample text set in the dotted font, on ruled practice lines"></canvas>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Settings">
+      <div class="group">
+        <span class="label">Preview</span>
+        <div class="field">
+          <label for="text">Sample text</label>
+          <input type="text" id="text" value="Trace each letter Aa Bb Cc 123" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="row">
+          <div class="row-head"><label for="px">Preview size</label><output id="px-out" for="px">96 px</output></div>
+          <input type="range" id="px" min="32" max="220" step="2" value="96">
+        </div>
+        <label class="check" id="ghost-wrap" hidden><input type="checkbox" id="ghost"> Show the original underneath</label>
+      </div>
+
+      <fieldset>
+        <legend class="label">Where the dots go</legend>
+        <label class="opt">
+          <input type="radio" name="style" id="style-centre" value="centre" checked>
+          <span><span class="opt-name">Centre line</span><span class="opt-desc">One row of dots down the middle of each stroke, like a tracing worksheet. Best with plain, even-weight fonts.</span></span>
+        </label>
+        <label class="opt">
+          <input type="radio" name="style" id="style-outline" value="outline">
+          <span><span class="opt-name">Outline</span><span class="opt-desc">Dots follow the edge of each letter. Works with any font.</span></span>
+        </label>
+      </fieldset>
+
+      <div class="sliders">
+        <div class="row">
+          <div class="row-head"><label for="size">Dot size</label><output id="size-out" for="size">40</output></div>
+          <input type="range" id="size" min="12" max="110" step="1" value="40">
+        </div>
+        <div class="row">
+          <div class="row-head"><label for="spacing">Spacing between dots</label><output id="spacing-out" for="spacing">70</output></div>
+          <input type="range" id="spacing" min="24" max="220" step="1" value="70">
+        </div>
+        <p class="fine">Both are in thousandths of the font size, so 70 at 100 pt puts dots 7 pt apart.</p>
+      </div>
+
+      <div class="save">
+        <button class="btn primary" id="download" type="button" disabled>Download dotted font</button>
+        <div class="bar" id="bar" hidden><i id="bar-fill"></i></div>
+        <p class="status" id="status" aria-live="polite"></p>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <p>The font is converted inside this page. It is not uploaded anywhere.</p>
+    <p>The download is a .ttf named after the original with “Dotted” added, so both can be installed side by side. Kerning, ligatures and accents carry over. Check the original font’s licence allows modified copies before you share it.</p>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js"></script>
+<script>
+/* Dotted font conversion core. Runs in the browser and in Node (for tests). */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.DotFont = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  function FontError(message) { const e = new Error(message); e.friendly = true; return e; }
+  const view = (u8) => new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  const tagAt = (u8, o) => String.fromCharCode(u8[o], u8[o + 1], u8[o + 2], u8[o + 3]);
+
+  /* ---------- container reading ---------- */
+
+  function parseDirectory(u8, base) {
+    const dv = view(u8);
+    if (base + 12 > u8.length) throw FontError('That file is cut short and cannot be read as a font.');
+    const n = dv.getUint16(base + 4);
+    const tables = new Map();
+    for (let i = 0; i < n; i++) {
+      const o = base + 12 + 16 * i;
+      if (o + 16 > u8.length) throw FontError('That file is cut short and cannot be read as a font.');
+      const off = dv.getUint32(o + 8), len = dv.getUint32(o + 12);
+      if (off + len > u8.length) throw FontError('That file is cut short and cannot be read as a font.');
+      tables.set(tagAt(u8, o), u8.subarray(off, off + len));
+    }
+    return tables;
+  }
+
+  async function inflate(u8) {
+    if (typeof DecompressionStream === 'undefined') throw FontError('This browser cannot unpack WOFF files. Use a .ttf or .otf file.');
+    const stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate'));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+
+  async function readWoff(u8) {
+    const dv = view(u8);
+    const n = dv.getUint16(12);
+    const tables = new Map();
+    for (let i = 0; i < n; i++) {
+      const o = 44 + 20 * i;
+      const off = dv.getUint32(o + 4), comp = dv.getUint32(o + 8), orig = dv.getUint32(o + 12);
+      if (off + comp > u8.length) throw FontError('That file is cut short and cannot be read as a font.');
+      let data = u8.subarray(off, off + comp);
+      if (comp < orig) data = await inflate(data);
+      tables.set(tagAt(u8, o), data);
+    }
+    return tables;
+  }
+
+  async function readContainer(buf) {
+    const u8 = new Uint8Array(buf);
+    if (u8.length < 12) throw FontError('That file is too small to be a font.');
+    const sig = view(u8).getUint32(0);
+    const notes = [];
+    if (sig === 0x774F4632) throw FontError('WOFF2 files are not supported. Use the .ttf, .otf or .woff version of the font.');
+    if (sig === 0x774F4646) return { tables: await readWoff(u8), notes };
+    if (sig === 0x74746366) {
+      const num = view(u8).getUint32(8);
+      if (num > 1) notes.push('This file holds ' + num + ' fonts. Only the first one was converted.');
+      return { tables: parseDirectory(u8, view(u8).getUint32(12)), notes };
+    }
+    if (sig === 0x00010000 || sig === 0x4F54544F || sig === 0x74727565) return { tables: parseDirectory(u8, 0), notes };
+    throw FontError('That does not look like a font. Use a .ttf, .otf or .woff file.');
+  }
+
+  /* ---------- container writing ---------- */
+
+  function checksum(u8) {
+    let sum = 0;
+    const n = u8.length & ~3;
+    for (let i = 0; i < n; i += 4) sum = (sum + ((u8[i] << 24) | (u8[i + 1] << 16) | (u8[i + 2] << 8) | u8[i + 3])) >>> 0;
+    if (n < u8.length) {
+      let last = 0;
+      for (let i = n; i < n + 4; i++) last = (last << 8) | (i < u8.length ? u8[i] : 0);
+      sum = (sum + last) >>> 0;
+    }
+    return sum >>> 0;
+  }
+
+  function buildSfnt(tables, flavor) {
+    const tags = Array.from(tables.keys()).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const n = tags.length;
+    let off = 12 + 16 * n;
+    const recs = tags.map((tag) => {
+      const data = tables.get(tag);
+      const r = { tag, data, off, len: data.length };
+      off += (data.length + 3) & ~3;
+      return r;
+    });
+    const out = new Uint8Array(off);
+    const dv = view(out);
+    const es = Math.floor(Math.log2(n)), sr = (1 << es) * 16;
+    dv.setUint32(0, flavor); dv.setUint16(4, n); dv.setUint16(6, sr); dv.setUint16(8, es); dv.setUint16(10, n * 16 - sr);
+    let headOff = -1;
+    recs.forEach((r, i) => {
+      out.set(r.data, r.off);
+      if (r.tag === 'head') { headOff = r.off; dv.setUint32(r.off + 8, 0); }
+      const o = 12 + 16 * i;
+      for (let k = 0; k < 4; k++) out[o + k] = r.tag.charCodeAt(k);
+      dv.setUint32(o + 4, checksum(out.subarray(r.off, r.off + ((r.len + 3) & ~3))));
+      dv.setUint32(o + 8, r.off); dv.setUint32(o + 12, r.len);
+    });
+    if (headOff >= 0) dv.setUint32(headOff + 8, (0xB1B0AFBA - checksum(out)) >>> 0);
+    return out;
+  }
+
+  /* ---------- opening a font ---------- */
+
+  const SYNTH_CMAP = new Uint8Array([0, 0, 0, 1, 0, 3, 0, 1, 0, 0, 0, 12,
+    0, 4, 0, 24, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0xFF, 0xFF, 0, 0, 0xFF, 0xFF, 0, 1, 0, 0]);
+
+  async function openFont(buf, opentype) {
+    const { tables, notes } = await readContainer(buf);
+    for (const t of ['head', 'hhea', 'maxp', 'hmtx']) {
+      if (!tables.has(t)) throw FontError('This font is missing data it needs (the "' + t + '" table), so it cannot be converted.');
+    }
+    const hasGlyf = tables.has('glyf') && tables.has('loca');
+    if (!hasGlyf && !tables.has('CFF ')) {
+      if (tables.has('CFF2')) throw FontError('This font stores its outlines in the CFF2 format, which is not supported. A static .ttf or .otf version will work.');
+      throw FontError('This font has no letter outlines to convert. It may be a bitmap or emoji font.');
+    }
+    const slim = new Map();
+    for (const t of ['head', 'hhea', 'maxp', 'hmtx', 'cmap', 'name', 'post', 'OS/2'].concat(hasGlyf ? ['glyf', 'loca'] : ['CFF '])) {
+      if (tables.has(t)) slim.set(t, tables.get(t));
+    }
+    const flavor = hasGlyf ? 0x00010000 : 0x4F54544F;
+    let ot, cmapOk = true;
+    try {
+      ot = opentype.parse(buildSfnt(slim, flavor).buffer);
+    } catch (e1) {
+      cmapOk = false;
+      slim.set('cmap', SYNTH_CMAP);
+      slim.delete('name');
+      try { ot = opentype.parse(buildSfnt(slim, flavor).buffer); }
+      catch (e2) { throw FontError('This font could not be read (' + (e1 && e1.message ? e1.message : 'unknown format problem') + ').'); }
+    }
+    const head = view(tables.get('head'));
+    const upm = head.getUint16(18) || 1000;
+    const numGlyphs = view(tables.get('maxp')).getUint16(4);
+    const variable = tables.has('fvar');
+    if (variable) notes.push('This is a variable font. The dotted version uses its default weight and width only.');
+    if (tables.has('sbix') || tables.has('CBDT') || tables.has('SVG ')) notes.push('Colour or bitmap images inside this font were left out; only the vector outlines were dotted.');
+    const pick = (o) => (o ? (o.en || o[Object.keys(o)[0]]) : '') || '';
+    const names = ot.names || {};
+    let xHeight = 0, capHeight = 0;
+    const os2 = tables.get('OS/2');
+    if (os2 && os2.length >= 90 && view(os2).getUint16(0) >= 2) { xHeight = view(os2).getInt16(86); capHeight = view(os2).getInt16(88); }
+    const hhea = view(tables.get('hhea'));
+    return {
+      tables, ot, upm, numGlyphs, variable, notes, cmapOk, cache: numGlyphs <= 6000,
+      family: pick(names.preferredFamily) || pick(names.fontFamily),
+      style: pick(names.preferredSubfamily) || pick(names.fontSubfamily),
+      ascender: hhea.getInt16(4), descender: hhea.getInt16(6), xHeight, capHeight,
+      outlines: new Array(numGlyphs), skeletons: new Array(numGlyphs),
+    };
+  }
+
+  /* ---------- outlines to polylines ---------- */
+
+  const COS_CORNER = Math.cos(30 * Math.PI / 180);
+
+  function contoursFromCommands(cmds, upm) {
+    const step = upm / 100;
+    const contours = [];
+    let segs = null, sx = 0, sy = 0, x = 0, y = 0;
+    const finish = () => {
+      if (!segs) return;
+      if (Math.abs(x - sx) > 1e-6 || Math.abs(y - sy) > 1e-6) segs.push([x, y, sx, sy]);
+      const c = buildContour(segs, step);
+      if (c) contours.push(c);
+      segs = null;
+    };
+    for (let i = 0; i < cmds.length; i++) {
+      const c = cmds[i];
+      if (c.type === 'M') { finish(); segs = []; sx = x = c.x; sy = y = c.y; }
+      else if (!segs) continue;
+      else if (c.type === 'L') { segs.push([x, y, c.x, c.y]); x = c.x; y = c.y; }
+      else if (c.type === 'Q') { segs.push([x, y, c.x1, c.y1, c.x, c.y]); x = c.x; y = c.y; }
+      else if (c.type === 'C') { segs.push([x, y, c.x1, c.y1, c.x2, c.y2, c.x, c.y]); x = c.x; y = c.y; }
+      else if (c.type === 'Z') { finish(); }
+    }
+    finish();
+    return contours;
+  }
+
+  function buildContour(segsIn, step) {
+    const segs = [];
+    for (const s of segsIn) {
+      const n = s.length;
+      let span = 0;
+      for (let k = 2; k < n; k += 2) span += Math.hypot(s[k] - s[k - 2], s[k + 1] - s[k - 1]);
+      if (span > 1e-6) segs.push({ p: s, span });
+    }
+    if (!segs.length) return null;
+    const dir = (ax, ay, bx, by) => { const d = Math.hypot(bx - ax, by - ay); return d > 1e-6 ? [(bx - ax) / d, (by - ay) / d] : null; };
+    for (const s of segs) {
+      const p = s.p, n = p.length;
+      let a = null, b = null;
+      for (let k = 2; k < n && !a; k += 2) a = dir(p[0], p[1], p[k], p[k + 1]);
+      for (let k = n - 4; k >= 0 && !b; k -= 2) b = dir(p[k], p[k + 1], p[n - 2], p[n - 1]);
+      s.t0 = a || [1, 0]; s.t1 = b || s.t0;
+    }
+    const pts = [], corner = [];
+    for (let i = 0; i < segs.length; i++) {
+      const s = segs[i], prev = segs[(i + segs.length - 1) % segs.length], p = s.p;
+      pts.push(p[0], p[1]);
+      corner.push(segs.length > 1 && prev.t1[0] * s.t0[0] + prev.t1[1] * s.t0[1] < COS_CORNER ? 1 : 0);
+      if (p.length === 4) continue;
+      const n = Math.max(3, Math.min(80, Math.ceil(s.span / step)));
+      for (let k = 1; k < n; k++) {
+        const t = k / n, u = 1 - t;
+        if (p.length === 6) {
+          pts.push(u * u * p[0] + 2 * u * t * p[2] + t * t * p[4], u * u * p[1] + 2 * u * t * p[3] + t * t * p[5]);
+        } else {
+          const a = u * u * u, b = 3 * u * u * t, c = 3 * u * t * t, d = t * t * t;
+          pts.push(a * p[0] + b * p[2] + c * p[4] + d * p[6], a * p[1] + b * p[3] + c * p[5] + d * p[7]);
+        }
+        corner.push(0);
+      }
+    }
+    const n = pts.length / 2;
+    const cum = new Float64Array(n + 1);
+    let cx = 0, cy = 0;
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      const d = Math.hypot(pts[2 * j] - pts[2 * i], pts[2 * j + 1] - pts[2 * i + 1]);
+      cum[i + 1] = cum[i] + d;
+      cx += (pts[2 * i] + pts[2 * j]) / 2 * d; cy += (pts[2 * i + 1] + pts[2 * j + 1]) / 2 * d;
+    }
+    const len = cum[n];
+    if (len <= 1e-6) return null;
+    return { pts: Float64Array.from(pts), corner: Uint8Array.from(corner), cum, len, cx: cx / len, cy: cy / len, n };
+  }
+
+  function getOutline(font, gid) {
+    let o = font.outlines[gid];
+    if (o) return o;
+    let cmds = [], composite = false;
+    try {
+      const g = font.ot.glyphs.get(gid);
+      cmds = (g.path && g.path.commands) || [];
+      composite = !!g.isComposite;
+    } catch (e) { cmds = []; }
+    const contours = contoursFromCommands(cmds, font.upm);
+    o = { contours, overlapCheck: (composite || font.variable) && contours.length > 1 };
+    if (font.cache) font.outlines[gid] = o;
+    return o;
+  }
+
+  /* point on a closed polyline at arc length s; writes [x, y, tx, ty] into q */
+  function pointAt(c, s, q) {
+    s = ((s % c.len) + c.len) % c.len;
+    let lo = 0, hi = c.n;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (c.cum[m] <= s) lo = m; else hi = m; }
+    const j = (lo + 1) % c.n, d = c.cum[lo + 1] - c.cum[lo];
+    const t = d > 0 ? (s - c.cum[lo]) / d : 0;
+    const ax = c.pts[2 * lo], ay = c.pts[2 * lo + 1], bx = c.pts[2 * j], by = c.pts[2 * j + 1];
+    q[0] = ax + (bx - ax) * t; q[1] = ay + (by - ay) * t;
+    q[2] = d > 0 ? (bx - ax) / d : 1; q[3] = d > 0 ? (by - ay) / d : 0;
+  }
+
+  function winding(contours, x, y) {
+    let w = 0;
+    for (const c of contours) {
+      const p = c.pts, n = c.n;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        const y0 = p[2 * i + 1], y1 = p[2 * j + 1];
+        if ((y0 <= y) === (y1 <= y)) continue;
+        const xi = p[2 * i] + (y - y0) / (y1 - y0) * (p[2 * j] - p[2 * i]);
+        if (xi > x) w += y1 > y0 ? 1 : -1;
+      }
+    }
+    return w;
+  }
+
+  /* ---------- outline style: dots along each contour ---------- */
+
+  function outlineDots(outline, spacing, upm) {
+    const out = [];
+    const q = [0, 0, 0, 0];
+    const eps = upm / 200;
+    const emit = (c, s) => {
+      pointAt(c, s, q);
+      if (outline.overlapCheck) {
+        const nx = -q[3] * eps, ny = q[2] * eps;
+        if (winding(outline.contours, q[0] + nx, q[1] + ny) !== 0 && winding(outline.contours, q[0] - nx, q[1] - ny) !== 0) return;
+      }
+      out.push(q[0], q[1]);
+    };
+    for (const c of outline.contours) {
+      const L = c.len;
+      if (L < 1.2 * spacing) { out.push(c.cx, c.cy); continue; }
+      const cs = [];
+      for (let i = 0; i < c.n; i++) if (c.corner[i]) cs.push(c.cum[i]);
+      const minGap = 0.75 * spacing;
+      const anchors = [];
+      for (let i = 0; i < cs.length;) {
+        let j = i;
+        while (j + 1 < cs.length && cs[j + 1] - cs[i] < minGap) j++;
+        anchors.push((cs[i] + cs[j]) / 2);
+        i = j + 1;
+      }
+      if (anchors.length > 1 && anchors[0] + L - anchors[anchors.length - 1] < minGap) {
+        anchors[0] = (anchors[0] + anchors.pop() - L) / 2;
+      }
+      if (anchors.length <= 1) {
+        const a0 = anchors.length ? anchors[0] : 0;
+        const n = Math.max(2, Math.round(L / spacing));
+        for (let k = 0; k < n; k++) emit(c, a0 + L * k / n);
+      } else {
+        for (let i = 0; i < anchors.length; i++) {
+          const a = anchors[i], b = i + 1 < anchors.length ? anchors[i + 1] : anchors[0] + L;
+          const n = Math.max(1, Math.round((b - a) / spacing));
+          for (let k = 0; k < n; k++) emit(c, a + (b - a) * k / n);
+        }
+      }
+    }
+    return out;
+  }
+
+  /* ---------- centre-line style: thin the filled shape to its skeleton ---------- */
+
+  const PX_PER_EM = 300, PAD = 2;
+
+  function skeletonize(outline, upm) {
+    const empty = { paths: [], points: [] };
+    const cs = outline.contours;
+    if (!cs.length) return empty;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const c of cs) for (let i = 0; i < c.n; i++) {
+      const x = c.pts[2 * i], y = c.pts[2 * i + 1];
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+    let s = PX_PER_EM / upm;
+    const big = Math.max(x1 - x0, y1 - y0) * s;
+    if (big > 900) s *= 900 / big;
+    const w = Math.ceil((x1 - x0) * s) + 2 * PAD + 1, h = Math.ceil((y1 - y0) * s) + 2 * PAD + 1;
+    const N = w * h;
+    const img = new Uint8Array(N);
+
+    // scanline fill, non-zero winding
+    const rows = new Array(h);
+    for (const c of cs) for (let i = 0; i < c.n; i++) {
+      const j = (i + 1) % c.n;
+      const ax = (c.pts[2 * i] - x0) * s + PAD, ay = (c.pts[2 * i + 1] - y0) * s + PAD;
+      const bx = (c.pts[2 * j] - x0) * s + PAD, by = (c.pts[2 * j + 1] - y0) * s + PAD;
+      if (ay === by) continue;
+      const d = by > ay ? 1 : -1;
+      const ya = Math.min(ay, by), yb = Math.max(ay, by);
+      const r0 = Math.max(0, Math.ceil(ya - 0.5)), r1 = Math.min(h - 1, Math.ceil(yb - 0.5) - 1);
+      for (let r = r0; r <= r1; r++) {
+        const xc = ax + (r + 0.5 - ay) / (by - ay) * (bx - ax);
+        (rows[r] || (rows[r] = [])).push(xc, d);
+      }
+    }
+    let filled = 0;
+    for (let r = 0; r < h; r++) {
+      const a = rows[r];
+      if (!a) continue;
+      for (let i = 2; i < a.length; i += 2) {
+        const xv = a[i], dv = a[i + 1];
+        let k = i - 2;
+        while (k >= 0 && a[k] > xv) { a[k + 2] = a[k]; a[k + 3] = a[k + 1]; k -= 2; }
+        a[k + 2] = xv; a[k + 3] = dv;
+      }
+      let wind = 0;
+      for (let i = 0; i < a.length; i += 2) {
+        if (wind !== 0) {
+          const c0 = Math.max(0, Math.ceil(a[i - 2] - 0.5)), c1 = Math.min(w - 1, Math.ceil(a[i] - 0.5) - 1);
+          for (let cx = c0; cx <= c1; cx++) { img[r * w + cx] = 1; filled++; }
+        }
+        wind += a[i + 1];
+      }
+    }
+    if (!filled) return empty;
+
+    // distance to the edge of the shape (3-4 chamfer)
+    const dt = new Uint16Array(N);
+    for (let i = 0; i < N; i++) dt[i] = img[i] ? 60000 : 0;
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      if (!dt[i]) continue;
+      const m = Math.min(dt[i - 1] + 3, dt[i - w] + 3, dt[i - w - 1] + 4, dt[i - w + 1] + 4);
+      if (m < dt[i]) dt[i] = m;
+    }
+    for (let y = h - 2; y > 0; y--) for (let x = w - 2; x > 0; x--) {
+      const i = y * w + x;
+      if (!dt[i]) continue;
+      const m = Math.min(dt[i + 1] + 3, dt[i + w] + 3, dt[i + w + 1] + 4, dt[i + w - 1] + 4);
+      if (m < dt[i]) dt[i] = m;
+    }
+    const dist = (i) => dt[i] / 3 - 0.5;
+
+    // Zhang-Suen thinning
+    let list = [];
+    for (let i = 0; i < N; i++) if (img[i]) list.push(i);
+    let changed = true;
+    const del = [];
+    while (changed) {
+      changed = false;
+      for (let pass = 0; pass < 2; pass++) {
+        del.length = 0;
+        for (let k = 0; k < list.length; k++) {
+          const i = list[k];
+          if (!img[i]) continue;
+          const p2 = img[i - w], p3 = img[i - w + 1], p4 = img[i + 1], p5 = img[i + w + 1];
+          const p6 = img[i + w], p7 = img[i + w - 1], p8 = img[i - 1], p9 = img[i - w - 1];
+          const B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+          if (B < 2 || B > 6) continue;
+          const A = (!p2 && p3) + (!p3 && p4) + (!p4 && p5) + (!p5 && p6) + (!p6 && p7) + (!p7 && p8) + (!p8 && p9) + (!p9 && p2);
+          if (A !== 1) continue;
+          if (pass === 0 ? (p2 * p4 * p6 || p4 * p6 * p8) : (p2 * p4 * p8 || p2 * p6 * p8)) continue;
+          del.push(i);
+        }
+        for (let k = 0; k < del.length; k++) img[del[k]] = 0;
+        if (del.length) changed = true;
+      }
+      let m = 0;
+      for (let k = 0; k < list.length; k++) if (img[list[k]]) list[m++] = list[k];
+      list.length = m;
+    }
+
+    // skeleton pixels to a graph of paths
+    const off = [1, w + 1, w, w - 1, -1, -w - 1, -w, -w + 1];
+    const nb = (i, out) => {
+      let n = 0;
+      for (let d = 0; d < 8; d++) {
+        const j = i + off[d];
+        if (!img[j]) continue;
+        if ((d & 1) && (img[i + off[(d + 7) & 7]] || img[i + off[(d + 1) & 7]])) continue;
+        out[n++] = j;
+      }
+      return n;
+    };
+    const deg = new Uint8Array(N);
+    const b1 = new Array(8), b2 = new Array(8);
+    const trace = () => {
+      for (let k = 0; k < list.length; k++) deg[list[k]] = img[list[k]] ? nb(list[k], b1) : 0;
+      const seen = new Set(), onPath = new Uint8Array(N);
+      const key = (a, b) => (a < b ? a * N + b : b * N + a);
+      const paths = [], iso = [];
+      for (let k = 0; k < list.length; k++) {
+        const i = list[k];
+        if (!img[i] || deg[i] === 2) continue;
+        if (deg[i] === 0) { iso.push(i); continue; }
+        const n = nb(i, b1), start = b1.slice(0, n);
+        for (const q of start) {
+          if (seen.has(key(i, q))) continue;
+          seen.add(key(i, q));
+          const px = [i];
+          let prev = i, cur = q;
+          for (;;) {
+            px.push(cur); onPath[cur] = 1;
+            if (deg[cur] !== 2) break;
+            nb(cur, b2);
+            const next = b2[0] === prev ? b2[1] : b2[0];
+            seen.add(key(cur, next));
+            prev = cur; cur = next;
+          }
+          onPath[i] = 1;
+          paths.push({ px, closed: false });
+        }
+      }
+      for (let k = 0; k < list.length; k++) {
+        const i = list[k];
+        if (!img[i] || deg[i] !== 2 || onPath[i]) continue;
+        const px = [i];
+        onPath[i] = 1;
+        nb(i, b2);
+        let prev = i, cur = b2[0];
+        while (cur !== i && !onPath[cur]) {
+          px.push(cur); onPath[cur] = 1;
+          nb(cur, b2);
+          const next = b2[0] === prev ? b2[1] : b2[0];
+          prev = cur; cur = next;
+        }
+        paths.push({ px, closed: true });
+      }
+      return { paths, iso };
+    };
+    const pxLen = (px) => {
+      let L = 0;
+      for (let k = 1; k < px.length; k++) L += Math.abs(px[k] - px[k - 1]) === 1 || Math.abs(px[k] - px[k - 1]) === w ? 1 : 1.4142;
+      return L;
+    };
+
+    // drop the short forks that thinning leaves at stroke ends and corners
+    let g = trace();
+    let pruned = false;
+    for (const p of g.paths) {
+      if (p.closed) continue;
+      const a = p.px[0], b = p.px[p.px.length - 1];
+      const tip = deg[a] === 1 ? a : deg[b] === 1 ? b : -1;
+      const joint = tip === a ? b : a;
+      if (tip < 0 || deg[joint] < 3) continue;
+      if (pxLen(p.px) < 1.7 * dist(joint) + 1.5) {
+        for (const i of p.px) if (i !== joint) img[i] = 0;
+        pruned = true;
+      }
+    }
+    if (pruned) g = trace();
+
+    const ux = (i) => ((i % w) + 0.5 - PAD) / s + x0;
+    const uy = (i) => (Math.floor(i / w) + 0.5 - PAD) / s + y0;
+    const result = { paths: [], points: [] };
+    for (const i of g.iso) result.points.push(ux(i), uy(i));
+    for (const p of g.paths) {
+      const n = p.px.length;
+      let pts = new Float32Array(2 * n);
+      for (let k = 0; k < n; k++) { pts[2 * k] = ux(p.px[k]); pts[2 * k + 1] = uy(p.px[k]); }
+      for (let it = 0; it < 4 && n > 2; it++) {
+        const q = new Float32Array(pts);
+        const lo = p.closed ? 0 : 1, hi = p.closed ? n : n - 1;
+        for (let k = lo; k < hi; k++) {
+          const a = (k + n - 1) % n, b = (k + 1) % n;
+          q[2 * k] = (pts[2 * a] + 2 * pts[2 * k] + pts[2 * b]) / 4;
+          q[2 * k + 1] = (pts[2 * a + 1] + 2 * pts[2 * k + 1] + pts[2 * b + 1]) / 4;
+        }
+        pts = q;
+      }
+      const a = p.px[0], b = p.px[n - 1];
+      result.paths.push({
+        pts, closed: p.closed,
+        ext0: !p.closed && deg[a] === 1 ? Math.max(0, dist(a)) / s : 0,
+        ext1: !p.closed && deg[b] === 1 ? Math.max(0, dist(b)) / s : 0,
+      });
+    }
+    return result;
+  }
+
+  function getSkeleton(font, gid) {
+    let sk = font.skeletons[gid];
+    if (!sk) { sk = skeletonize(getOutline(font, gid), font.upm); if (font.cache) font.skeletons[gid] = sk; }
+    return sk;
+  }
+
+  function centreDots(sk, spacing, r) {
+    const out = [], nodes = [];
+    const min2 = (0.5 * spacing) * (0.5 * spacing);
+    const addNode = (x, y) => {
+      for (let k = 0; k < nodes.length; k += 2) {
+        const dx = nodes[k] - x, dy = nodes[k + 1] - y;
+        if (dx * dx + dy * dy < min2) return;
+      }
+      nodes.push(x, y); out.push(x, y);
+    };
+    for (let k = 0; k < sk.points.length; k += 2) addNode(sk.points[k], sk.points[k + 1]);
+    for (const p of sk.paths) {
+      let pts = Array.from(p.pts);
+      const n0 = pts.length / 2;
+      const extend = (atEnd, amount) => {
+        if (amount <= 0 || n0 < 2) return;
+        const back = Math.min(6, n0 - 1);
+        const e = atEnd ? n0 - 1 : 0, f = atEnd ? n0 - 1 - back : back;
+        const dx = p.pts[2 * e] - p.pts[2 * f], dy = p.pts[2 * e + 1] - p.pts[2 * f + 1];
+        const d = Math.hypot(dx, dy);
+        if (d < 1e-6) return;
+        const x = p.pts[2 * e] + dx / d * amount, y = p.pts[2 * e + 1] + dy / d * amount;
+        if (atEnd) pts.push(x, y); else pts = [x, y].concat(pts);
+      };
+      extend(true, p.ext1 - r);
+      extend(false, p.ext0 - r);
+      const n = pts.length / 2;
+      const segs = p.closed ? n : n - 1;
+      const cum = new Float64Array(segs + 1);
+      for (let i = 0; i < segs; i++) {
+        const j = (i + 1) % n;
+        cum[i + 1] = cum[i] + Math.hypot(pts[2 * j] - pts[2 * i], pts[2 * j + 1] - pts[2 * i + 1]);
+      }
+      const L = cum[segs];
+      let seg = 0;
+      const at = (sv) => {
+        while (seg < segs - 1 && cum[seg + 1] < sv) seg++;
+        const j = (seg + 1) % n, d = cum[seg + 1] - cum[seg], t = d > 0 ? (sv - cum[seg]) / d : 0;
+        return [pts[2 * seg] + (pts[2 * j] - pts[2 * seg]) * t, pts[2 * seg + 1] + (pts[2 * j + 1] - pts[2 * seg + 1]) * t];
+      };
+      if (p.closed) {
+        const m = Math.max(1, Math.round(L / spacing));
+        if (m < 3) { let cx = 0, cy = 0; for (let i = 0; i < n; i++) { cx += pts[2 * i]; cy += pts[2 * i + 1]; } addNode(cx / n, cy / n); continue; }
+        for (let k = 0; k < m; k++) { const q = at(L * k / m); out.push(q[0], q[1]); }
+      } else if (L < 0.6 * spacing) {
+        const q = at(L / 2); addNode(q[0], q[1]);
+      } else {
+        const m = Math.max(1, Math.round(L / spacing));
+        addNode(pts[0], pts[1]);
+        for (let k = 1; k < m; k++) { const q = at(L * k / m); out.push(q[0], q[1]); }
+        addNode(pts[2 * n - 2], pts[2 * n - 1]);
+      }
+    }
+    return out;
+  }
+
+  /* ---------- dots for one glyph ---------- */
+
+  function glyphDots(font, gid, params) {
+    const u = font.upm / 1000;
+    const spacing = Math.max(4, params.spacing) * u, r = Math.max(2, params.size) * u / 2;
+    return params.style === 'centre'
+      ? centreDots(getSkeleton(font, gid), spacing, r)
+      : outlineDots(getOutline(font, gid), spacing, font.upm);
+  }
+
+  /* ---------- writing glyphs ---------- */
+
+  const OCT = [];
+  for (let k = 0; k < 8; k++) {
+    const a = -(k * 45 + 22.5) * Math.PI / 180, R = 1 / Math.cos(Math.PI / 8);
+    OCT.push(R * Math.cos(a), R * Math.sin(a));
+  }
+  const MAX_DOTS = 8000;
+
+  function encodeGlyph(dots, r) {
+    let nd = dots.length / 2;
+    if (!nd) return null;
+    let stride = 1;
+    if (nd > MAX_DOTS) { stride = Math.ceil(nd / MAX_DOTS); nd = Math.ceil(nd / stride); }
+    const np = nd * 8;
+    const xs = new Int16Array(np), ys = new Int16Array(np);
+    let xMin = 32767, yMin = 32767, xMax = -32768, yMax = -32768;
+    for (let d = 0; d < nd; d++) {
+      const cx = dots[2 * d * stride], cy = dots[2 * d * stride + 1];
+      for (let k = 0; k < 8; k++) {
+        const x = Math.max(-32768, Math.min(32767, Math.round(cx + r * OCT[2 * k])));
+        const y = Math.max(-32768, Math.min(32767, Math.round(cy + r * OCT[2 * k + 1])));
+        xs[d * 8 + k] = x; ys[d * 8 + k] = y;
+        if (x < xMin) xMin = x; if (x > xMax) xMax = x; if (y < yMin) yMin = y; if (y > yMax) yMax = y;
+      }
+    }
+    const flags = new Uint8Array(np), xb = [], yb = [];
+    let px = 0, py = 0;
+    for (let i = 0; i < np; i++) {
+      let f = i === 0 ? 0x40 : 0;
+      const dx = xs[i] - px, dy = ys[i] - py;
+      if (dx === 0) f |= 0x10;
+      else if (dx > -256 && dx < 256) { f |= 0x02; if (dx > 0) f |= 0x10; xb.push(Math.abs(dx)); }
+      else xb.push((dx >> 8) & 255, dx & 255);
+      if (dy === 0) f |= 0x20;
+      else if (dy > -256 && dy < 256) { f |= 0x04; if (dy > 0) f |= 0x20; yb.push(Math.abs(dy)); }
+      else yb.push((dy >> 8) & 255, dy & 255);
+      flags[i] = f; px = xs[i]; py = ys[i];
+    }
+    const fb = [];
+    for (let i = 0; i < np;) {
+      let j = i;
+      while (j + 1 < np && flags[j + 1] === flags[i] && j - i < 255) j++;
+      if (j > i) fb.push(flags[i] | 0x08, j - i); else fb.push(flags[i]);
+      i = j + 1;
+    }
+    const len = 10 + 2 * nd + 2 + fb.length + xb.length + yb.length;
+    const out = new Uint8Array((len + 3) & ~3);
+    const dv = view(out);
+    dv.setInt16(0, nd); dv.setInt16(2, xMin); dv.setInt16(4, yMin); dv.setInt16(6, xMax); dv.setInt16(8, yMax);
+    for (let d = 0; d < nd; d++) dv.setUint16(10 + 2 * d, d * 8 + 7);
+    let o = 10 + 2 * nd + 2;
+    out.set(fb, o); o += fb.length; out.set(xb, o); o += xb.length; out.set(yb, o);
+    return { bytes: out, xMin, yMin, xMax, yMax, points: np, contours: nd };
+  }
+
+  /* ---------- name table ---------- */
+
+  function renameTable(src, word) {
+    const dv = view(src);
+    if (src.length < 6) return src;
+    const count = dv.getUint16(2), strOff = dv.getUint16(4);
+    const recs = [];
+    for (let i = 0; i < count; i++) {
+      const o = 6 + 12 * i;
+      if (o + 12 > src.length) break;
+      const r = { p: dv.getUint16(o), e: dv.getUint16(o + 2), l: dv.getUint16(o + 4), id: dv.getUint16(o + 6) };
+      const len = dv.getUint16(o + 8), off = strOff + dv.getUint16(o + 10);
+      if (r.l >= 0x8000 || off + len > src.length || r.id === 25) continue;
+      r.b = Array.from(src.subarray(off, off + len));
+      recs.push(r);
+    }
+    const enc = (r, s) => { const a = []; for (let i = 0; i < s.length; i++) { if (r.p !== 1) a.push(0); a.push(s.charCodeAt(i)); } return a; };
+    const fam = new Map();
+    for (const r of recs) if (r.id === 1) fam.set(r.p + '/' + r.e + '/' + r.l, r.b.slice());
+    const starts = (b, pre) => pre.length > 0 && pre.length <= b.length && pre.every((v, i) => b[i] === v);
+    for (const r of recs) {
+      if (r.id === 1 || r.id === 3 || r.id === 16 || r.id === 21) r.b = r.b.concat(enc(r, ' ' + word));
+      else if (r.id === 4 || r.id === 18) {
+        const f = fam.get(r.p + '/' + r.e + '/' + r.l);
+        if (f && starts(r.b, f)) r.b = f.concat(enc(r, ' ' + word), r.b.slice(f.length));
+        else r.b = r.b.concat(enc(r, ' ' + word));
+      } else if (r.id === 6) {
+        const wide = r.p !== 1, stepN = wide ? 2 : 1;
+        let cut = -1;
+        for (let i = 0; i + stepN <= r.b.length; i += stepN) {
+          if ((wide ? r.b[i] === 0 && r.b[i + 1] === 0x2D : r.b[i] === 0x2D)) { cut = i; break; }
+        }
+        r.b = cut < 0 ? r.b.concat(enc(r, word)) : r.b.slice(0, cut).concat(enc(r, word), r.b.slice(cut));
+      }
+    }
+    let total = 0;
+    for (const r of recs) total += r.b.length;
+    const out = new Uint8Array(6 + 12 * recs.length + total);
+    const ov = view(out);
+    ov.setUint16(0, 0); ov.setUint16(2, recs.length); ov.setUint16(4, 6 + 12 * recs.length);
+    let so = 0;
+    recs.forEach((r, i) => {
+      const o = 6 + 12 * i;
+      ov.setUint16(o, r.p); ov.setUint16(o + 2, r.e); ov.setUint16(o + 4, r.l); ov.setUint16(o + 6, r.id);
+      ov.setUint16(o + 8, r.b.length); ov.setUint16(o + 10, so);
+      out.set(r.b, 6 + 12 * recs.length + so); so += r.b.length;
+    });
+    return out;
+  }
+
+  /* ---------- whole-font conversion ---------- */
+
+  const DROP = ['CFF ', 'CFF2', 'VORG', 'glyf', 'loca', 'fpgm', 'prep', 'cvt ', 'hdmx', 'LTSH', 'VDMX', 'DSIG',
+    'fvar', 'gvar', 'avar', 'cvar', 'HVAR', 'VVAR', 'MVAR', 'STAT', 'EBDT', 'EBLC', 'EBSC', 'CBDT', 'CBLC', 'sbix', 'SVG '];
+
+  /* opts: { onProgress(done, total, phase), cancelled(), pause() } */
+  async function convert(font, params, opts) {
+    opts = opts || {};
+    const n = font.numGlyphs;
+    const r = Math.max(2, params.size) * font.upm / 1000 / 2;
+    const glyphs = new Array(n);
+    let total = 0, maxPts = 0, maxCont = 0, dotCount = 0;
+    let fx0 = 32767, fy0 = 32767, fx1 = -32768, fy1 = -32768;
+    let tick = Date.now();
+    for (let gid = 0; gid < n; gid++) {
+      const g = !opts.only || opts.only.has(gid) ? encodeGlyph(glyphDots(font, gid, params), r) : null;
+      glyphs[gid] = g;
+      if (g) {
+        total += g.bytes.length; dotCount += g.contours;
+        if (g.points > maxPts) maxPts = g.points; if (g.contours > maxCont) maxCont = g.contours;
+        if (g.xMin < fx0) fx0 = g.xMin; if (g.yMin < fy0) fy0 = g.yMin; if (g.xMax > fx1) fx1 = g.xMax; if (g.yMax > fy1) fy1 = g.yMax;
+      }
+      if (opts.pause && Date.now() - tick > 24) {
+        if (opts.onProgress) opts.onProgress(gid + 1, n);
+        await opts.pause();
+        if (opts.cancelled && opts.cancelled()) return null;
+        tick = Date.now();
+      }
+    }
+    if (!dotCount && !opts.only) throw FontError('No dots could be placed. This font seems to have empty outlines.');
+    const glyf = new Uint8Array(total), loca = new Uint8Array(4 * (n + 1));
+    const lv = view(loca);
+    let o = 0;
+    for (let gid = 0; gid < n; gid++) {
+      lv.setUint32(4 * gid, o);
+      if (glyphs[gid]) { glyf.set(glyphs[gid].bytes, o); o += glyphs[gid].bytes.length; }
+    }
+    lv.setUint32(4 * n, o);
+
+    const t = new Map();
+    for (const [tag, data] of font.tables) if (DROP.indexOf(tag) < 0) t.set(tag, data);
+    t.set('glyf', glyf); t.set('loca', loca);
+
+    const head = new Uint8Array(font.tables.get('head')), hv = view(head);
+    if (head.length >= 54) {
+      hv.setInt16(36, fx0); hv.setInt16(38, fy0); hv.setInt16(40, fx1); hv.setInt16(42, fy1);
+      hv.setInt16(50, 1); hv.setInt16(52, 0);
+    }
+    t.set('head', head);
+
+    const maxp = new Uint8Array(32), mv = view(maxp);
+    mv.setUint32(0, 0x00010000); mv.setUint16(4, n); mv.setUint16(6, maxPts); mv.setUint16(8, maxCont); mv.setUint16(14, 1);
+    t.set('maxp', maxp);
+
+    const hhea = new Uint8Array(font.tables.get('hhea')), hh = view(hhea);
+    const hmtx = new Uint8Array(font.tables.get('hmtx')), hm = view(hmtx);
+    const numH = hhea.length >= 36 ? hh.getUint16(34) : 0;
+    if (numH > 0 && hmtx.length >= 4 * numH + 2 * Math.max(0, n - numH)) {
+      let minL = 32767, minR = 32767, maxExt = -32768, adv = 0;
+      for (let gid = 0; gid < n; gid++) {
+        const lo = gid < numH ? 4 * gid + 2 : 4 * numH + 2 * (gid - numH);
+        if (gid < numH) adv = hm.getUint16(4 * gid);
+        const g = glyphs[gid];
+        hm.setInt16(lo, g ? g.xMin : 0);
+        if (g) {
+          if (g.xMin < minL) minL = g.xMin;
+          if (adv - g.xMax < minR) minR = adv - g.xMax;
+          if (g.xMax > maxExt) maxExt = g.xMax;
+        }
+      }
+      const clamp = (v) => Math.max(-32768, Math.min(32767, v));
+      hh.setInt16(12, clamp(minL)); hh.setInt16(14, clamp(minR)); hh.setInt16(16, clamp(maxExt));
+    }
+    t.set('hhea', hhea); t.set('hmtx', hmtx);
+    if (t.has('name')) { try { t.set('name', renameTable(t.get('name'), 'Dotted')); } catch (e) { /* keep the original names */ } }
+
+    return { bytes: buildSfnt(t, 0x00010000), dots: dotCount, glyphs: n };
+  }
+
+  return { openFont, convert, glyphDots, getOutline, getSkeleton, FontError };
+});
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const SAMPLE = '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AHQAIABBAHUAdABoAG8AcgBzACAAKABoAHQAdABwAHMAOgAvAC8AZwBpAHQAaAB1AGIALgBjAG8AbQAvAGkAdABmAG8AdQBuAGQAcgB5AC8AUABvAHAAcABpAG4AcwApAFAAbwBwAHAAaQBuAHMAUgBlAGcAdQBsAGEAcgBJAFQARgBPADsAIABQAG8AcABwAGkAbgBzACAAUgBlAGcAdQBsAGEAcgA7ACAANAAuADAAMAA0AGIAOABQAG8AcABwAGkAbgBzACAAUgBlAGcAdQBsAGEAcgA0AC4AMAAwADQAUABvAHAAcABpAG4AcwAtAFIAZQBnAHUAbABhAHIASQBuAGQAaQBhAG4AIABUAHkAcABlACAARgBvAHUAbgBkAHIAeQBOAGkAbgBhAGQAIABLAGEAbABlACAAKABEAGUAdgBhAG4AYQBnAGEAcgBpACkALAAgAEoAbwBuAG4AeQAgAFAAaQBuAGgAbwByAG4AIAAoAEwAYQB0AGkAbgApAGgAdAB0AHAAcwA6AC8ALwBpAG4AZABpAGEAbgB0AHkAcABlAGYAbwB1AG4AZAByAHkALgBjAG8AbQBUAGgAaQBzACAARgBvAG4AdAAgAFMAbwBmAHQAdwBhAHIAZQAgAGkAcwAgAGwAaQBjAGUAbgBzAGUAZAAgAHUAbgBkAGUAcgAgAHQAaABlACAAUwBJAEwAIABPAHAAZQBuACAARgBvAG4AdAAgAEwAaQBjAGUAbgBzAGUALAAgAFYAZQByAHMAaQBvAG4AIAAxAC4AMQAuACAAVABoAGkAcwAgAGwAaQBjAGUAbgBzAGUAIABpAHMAIABhAHYAYQBpAGwAYQBiAGwAZQAgAHcAaQB0AGgAIABhACAARgBBAFEAIABhAHQAOgAgAGgAdAB0AHAAcwA6AC8ALwBzAGMAcgBpAHAAdABzAC4AcwBpAGwALgBvAHIAZwAvAE8ARgBMAGgAdAB0AHAAcwA6AC8ALwBzAGMAcgBpAHAAdABzAC4AcwBpAGwALgBvAHIAZwAvAE8ARgBMCTgJLQlAACAJLgkoCUEJNwlNCS8JSwkCACAJFQlLACAJFwlMCTAJNQAgCRQJMAAgCQUJJwk/CRUJPgkwCUsJAgAgCRUJRwAgCS4JPgkuCTIJRwAgCS4JRwkCACAJHAkoCU0JLgkcCT4JJAAgCTgJTQk1CSQJKAlNCSQJTQkwCSQJPgAgCRQJMAAgCTgJLgk+CSgJJAk+ACAJKglNCTAJPgkqCU0JJAAgCTkJSAlkAAMAAAAAAAD/tQAyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAoAHAAeAAFERkxUAAgABAAAAAD//wAAAAAAAAABAAAACgAsAC4AA0RGTFQAFGRldjIAHmRldmEAHgAEAAAAAP//AAAAAAAAAAAAAA==';
+  const BIG = 4000;
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    source: $('source'), name: $('font-name'), chip: $('sample-chip'), pick: $('pick'), file: $('file'),
+    error: $('error'), notes: $('notes'), box: $('canvas-box'), canvas: $('preview'), text: $('text'), px: $('px'),
+    ghostWrap: $('ghost-wrap'), ghost: $('ghost'), size: $('size'), sizeOut: $('size-out'), spacing: $('spacing'),
+    spacingOut: $('spacing-out'), download: $('download'), bar: $('bar'), barFill: $('bar-fill'), status: $('status'),
+  };
+  const state = { font: null, base: '', isSample: true, gen: 0, full: null, face: null, faceName: '', ghostFace: null, ghostName: '', direct: false, busy: false, canSave: true, seq: 0 };
+  const num = (n) => n.toLocaleString('en-US');
+  const pause = () => new Promise((r) => setTimeout(r, 0));
+
+  // standalone: an ordinary browser download
+  const downloads = Promise.resolve({
+    save: async ({ filename, data }) => {
+      const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data]));
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      return { status: 'saved' };
+    },
+  });
+  downloads.then((d) => { if (!d) { state.canSave = false; syncButton(); setStatus(); } });
+
+  function params() {
+    return { style: $('style-outline').checked ? 'outline' : 'centre', size: +el.size.value, spacing: +el.spacing.value };
+  }
+  const keyOf = (p) => p.style + '/' + p.size + '/' + p.spacing;
+
+  function showError(msg) { el.error.textContent = msg; el.error.hidden = !msg; }
+  function syncButton() { el.download.disabled = !state.font || !state.canSave || state.busy; }
+  function progress(done, total) { el.bar.hidden = false; el.barFill.style.width = (100 * done / total).toFixed(1) + '%'; }
+  function setBusy(on, msg) {
+    state.busy = on;
+    if (!on) el.bar.hidden = true; else el.barFill.style.width = '0';
+    if (msg !== undefined) el.status.textContent = msg;
+    syncButton();
+  }
+  function fileSize(n) { return n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB'; }
+  function outName() {
+    const f = state.font;
+    let fam = (f.family || '').replace(/[^A-Za-z0-9]+/g, '');
+    if (!fam) fam = state.base.replace(/[^A-Za-z0-9_-]+/g, '') || 'Font';
+    const st = (f.style || '').replace(/[^A-Za-z0-9]+/g, '');
+    return fam + 'Dotted' + (st ? '-' + st : '') + '.ttf';
+  }
+  function setStatus(extra) {
+    if (!state.font) { el.status.textContent = ''; return; }
+    if (!state.canSave) { el.status.textContent = 'Saving files is not available in this view of the page.'; return; }
+    if (extra) { el.status.textContent = extra; return; }
+    const f = state.font;
+    if (state.full && state.full.key === keyOf(params())) {
+      el.status.textContent = outName() + ' · ' + num(f.numGlyphs) + ' glyphs · ' + fileSize(state.full.bytes.length);
+    } else if (f.numGlyphs > BIG) {
+      el.status.textContent = num(f.numGlyphs) + ' glyphs. The preview shows the sample text only; all glyphs are converted when you download.';
+    } else el.status.textContent = '';
+  }
+
+  /* ----- loading a font ----- */
+
+  const gidOf = (font, ch) => { try { return font.cmapOk ? font.ot.charToGlyphIndex(ch) : 0; } catch (e) { return 0; } };
+
+  async function loadBuffer(buf, fileName, isSample) {
+    showError('');
+    if (typeof opentype === 'undefined') { showError('The font reader did not load. Check your connection and reload the page.'); return; }
+    let font;
+    try { font = await DotFont.openFont(buf, opentype); }
+    catch (e) { showError(e && e.friendly ? e.message : 'This font could not be read.'); return; }
+    state.gen++;
+    state.font = font; state.full = null; state.isSample = isSample;
+    state.base = fileName.replace(/\.[^.]+$/, '');
+    const measure = (ch) => {
+      const g = gidOf(font, ch);
+      if (!g) return 0;
+      try { return font.ot.glyphs.get(g).getMetrics().yMax || 0; } catch (e) { return 0; }
+    };
+    if (!(font.xHeight > 0)) font.xHeight = measure('x');
+    if (!(font.capHeight > 0)) font.capHeight = measure('H');
+
+    // if the font has no glyphs for the sample text, show some of its own characters instead
+    const chars = Array.from(el.text.value).filter((c) => c.trim());
+    const known = chars.filter((c) => gidOf(font, c) > 0).length;
+    if (font.cmapOk && known < chars.length / 2) {
+      try {
+        const cps = Object.keys(font.ot.tables.cmap.glyphIndexMap).map(Number)
+          .filter((c) => c > 0x20 && !(c >= 0x7F && c <= 0xA0) && c !== 0xAD).sort((a, b) => a - b).slice(0, 14);
+        if (cps.length) el.text.value = cps.map((c) => String.fromCodePoint(c)).join(' ');
+      } catch (e) { /* keep the current sample */ }
+    }
+
+    el.name.textContent = [font.family, font.style].filter(Boolean).join(' ') || fileName;
+    el.chip.hidden = !isSample;
+    el.notes.innerHTML = '';
+    for (const n of font.notes) { const li = document.createElement('li'); li.textContent = n; el.notes.appendChild(li); }
+    el.notes.hidden = !font.notes.length;
+
+    // the untouched font, for the optional comparison layer
+    if (state.ghostFace) { document.fonts.delete(state.ghostFace); state.ghostFace = null; }
+    el.ghostWrap.hidden = true;
+    try {
+      const gname = 'dfo' + (++state.seq);
+      const gf = new FontFace(gname, buf.slice(0));
+      gf.load().then(() => {
+        if (state.font !== font) return;
+        document.fonts.add(gf); state.ghostFace = gf; state.ghostName = gname; el.ghostWrap.hidden = false; draw();
+      }, () => {});
+    } catch (e) { /* comparison layer unavailable */ }
+    refresh();
+  }
+
+  function sampleGids() {
+    const set = new Set([0]);
+    for (const ch of Array.from(el.text.value)) set.add(gidOf(state.font, ch));
+    return set;
+  }
+
+  async function showFont(bytes, my) {
+    if (!state.direct) {
+      try {
+        const name = 'dfp' + (++state.seq);
+        const face = new FontFace(name, bytes);
+        await face.load();
+        if (my !== state.gen) return;
+        document.fonts.add(face);
+        if (state.face) document.fonts.delete(state.face);
+        state.face = face; state.faceName = name;
+      } catch (e) { state.direct = true; }
+    }
+    draw();
+  }
+
+  async function refresh() {
+    const font = state.font;
+    if (!font) return;
+    const my = ++state.gen;
+    const p = params(), key = keyOf(p);
+    if (state.full && state.full.key === key) { setBusy(false); setStatus(); draw(); return; }
+    const big = font.numGlyphs > BIG;
+    const untraced = p.style === 'centre' && !font.traced;
+    try {
+      if (big || untraced) {
+        const quick = await DotFont.convert(font, p, { only: sampleGids() });
+        if (my !== state.gen) return;
+        await showFont(quick.bytes, my);
+        if (my !== state.gen) return;
+      }
+      if (big) { state.full = null; setBusy(false); setStatus(); return; }
+      setBusy(true, untraced ? 'Finding the centre line of each glyph…' : undefined);
+      const full = await DotFont.convert(font, p, {
+        pause, cancelled: () => my !== state.gen,
+        onProgress: (d, t) => { if (my === state.gen) progress(d, t); },
+      });
+      if (!full || my !== state.gen) return;
+      if (p.style === 'centre') font.traced = true;
+      state.full = { bytes: full.bytes, key };
+      await showFont(full.bytes, my);
+      if (my !== state.gen) return;
+      setBusy(false); setStatus();
+    } catch (e) {
+      if (my !== state.gen) return;
+      setBusy(false, '');
+      showError(e && e.friendly ? e.message : 'Something went wrong while converting this font.');
+    }
+  }
+
+  /* ----- the practice sheet ----- */
+
+  function draw() {
+    const font = state.font, canvas = el.canvas, ctx = canvas.getContext('2d');
+    const W = Math.max(200, el.box.clientWidth), dpr = Math.min(3, window.devicePixelRatio || 1);
+    const css = getComputedStyle(document.documentElement);
+    const col = (n) => css.getPropertyValue(n).trim();
+    const px = Math.min(+el.px.value, W / 2.2);
+    const padX = W < 520 ? 16 : 28, padY = 18;
+    const upm = font ? font.upm : 1000, sc = px / upm;
+    const asc = font ? Math.min(Math.max(font.ascender, 0) * sc, px * 1.35) : px * 0.9;
+    const desc = font ? Math.min(Math.max(-font.descender, 0) * sc, px * 0.75) : px * 0.3;
+    const lineH = Math.max(asc + desc, px * 1.1) * 1.14;
+    const text = el.text.value || ' ';
+    const rtl = /[֐-ࣿיִ-﷿ﹰ-ﻼ]/.test(text);
+    const p = params();
+
+    const direct = state.direct || !state.faceName;
+    const fontCss = px + 'px "' + state.faceName + '"';
+    ctx.font = fontCss;
+    const adv = (ch) => { try { return font.ot.glyphs.get(gidOf(font, ch)).advanceWidth * sc || 0; } catch (e) { return 0; } };
+    const measure = (s) => {
+      if (!font) return 0;
+      if (!direct) return ctx.measureText(s).width;
+      let w = 0; for (const ch of Array.from(s)) w += adv(ch); return w;
+    };
+    const maxW = W - 2 * padX, lines = [];
+    let line = '';
+    for (const word of text.split(' ')) {
+      const t = line ? line + ' ' + word : word;
+      if (!line || measure(t) <= maxW) line = t; else { lines.push(line); line = word; }
+      while (measure(line) > maxW && Array.from(line).length > 1) {
+        const cs = Array.from(line); let k = cs.length - 1;
+        while (k > 1 && measure(cs.slice(0, k).join('')) > maxW) k--;
+        lines.push(cs.slice(0, k).join('')); line = cs.slice(k).join('');
+      }
+    }
+    lines.push(line);
+    if (lines.length > 10) lines.length = 10;
+
+    const H = Math.round(padY * 2 + lines.length * lineH);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = fontCss;
+
+    lines.forEach((ln, i) => {
+      const base = Math.round(padY + i * lineH + (lineH - asc - desc) / 2 + asc) + 0.5;
+      const rule = (y, color, dash, width) => {
+        ctx.beginPath(); ctx.setLineDash(dash); ctx.lineWidth = width; ctx.strokeStyle = color;
+        ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      };
+      if (font && font.capHeight > 0) rule(Math.round(base - font.capHeight * sc) + 0.5, col('--rule'), [], 1);
+      if (font && font.xHeight > 0) rule(Math.round(base - font.xHeight * sc) + 0.5, col('--rule'), [7, 6], 1);
+      rule(base, col('--base'), [], 1.5);
+      ctx.setLineDash([]);
+      if (!font) return;
+      if (!direct) {
+        ctx.direction = rtl ? 'rtl' : 'ltr';
+        ctx.textAlign = rtl ? 'right' : 'left';
+        ctx.textBaseline = 'alphabetic';
+        const x = rtl ? W - padX : padX;
+        if (el.ghost.checked && state.ghostName && !el.ghostWrap.hidden) {
+          ctx.font = px + 'px "' + state.ghostName + '"';
+          ctx.fillStyle = col('--ghost'); ctx.fillText(ln, x, base);
+          ctx.font = fontCss;
+        }
+        ctx.fillStyle = col('--ink'); ctx.fillText(ln, x, base);
+      } else {
+        // fallback: draw the dots ourselves, one glyph after another
+        ctx.fillStyle = col('--ink');
+        const r = Math.max(2, p.size) * upm / 2000 * sc;
+        let x = padX;
+        for (const ch of Array.from(ln)) {
+          const g = gidOf(font, ch);
+          const d = DotFont.glyphDots(font, g, p);
+          ctx.beginPath();
+          for (let k = 0; k < d.length; k += 2) {
+            ctx.moveTo(x + d[k] * sc + r, base - d[k + 1] * sc);
+            ctx.arc(x + d[k] * sc, base - d[k + 1] * sc, r, 0, Math.PI * 2);
+          }
+          ctx.fill();
+          x += adv(ch);
+        }
+      }
+    });
+  }
+
+  /* ----- controls ----- */
+
+  let timer = 0;
+  const schedule = () => { clearTimeout(timer); timer = setTimeout(refresh, 70); };
+  const syncOutputs = () => { $('px-out').textContent = el.px.value + ' px'; el.sizeOut.textContent = el.size.value; el.spacingOut.textContent = el.spacing.value; };
+  el.size.addEventListener('input', () => { syncOutputs(); schedule(); });
+  el.spacing.addEventListener('input', () => { syncOutputs(); schedule(); });
+  $('style-outline').addEventListener('change', refresh);
+  $('style-centre').addEventListener('change', refresh);
+  el.text.addEventListener('input', () => {
+    if (!state.font) return;
+    if (state.font.numGlyphs > BIG || !(state.full && state.full.key === keyOf(params()))) schedule(); else draw();
+  });
+  el.px.addEventListener('input', () => { syncOutputs(); draw(); });
+  el.ghost.addEventListener('change', draw);
+
+  el.pick.addEventListener('click', () => el.file.click());
+  async function takeFile(file) {
+    if (!file) return;
+    let buf;
+    try { buf = await file.arrayBuffer(); } catch (e) { showError('That file could not be opened.'); return; }
+    loadBuffer(buf, file.name || 'Font', false);
+  }
+  el.file.addEventListener('change', () => { takeFile(el.file.files[0]); el.file.value = ''; });
+  let depth = 0;
+  window.addEventListener('dragenter', (e) => { e.preventDefault(); depth++; el.source.classList.add('over'); });
+  window.addEventListener('dragleave', () => { depth = Math.max(0, depth - 1); if (!depth) el.source.classList.remove('over'); });
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => {
+    e.preventDefault(); depth = 0; el.source.classList.remove('over');
+    takeFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]);
+  });
+
+  el.download.addEventListener('click', async () => {
+    const font = state.font;
+    if (!font) return;
+    const dl = await downloads;
+    if (!dl) { state.canSave = false; syncButton(); setStatus(); return; }
+    const p = params(), key = keyOf(p);
+    if (!(state.full && state.full.key === key)) {
+      const my = ++state.gen;
+      setBusy(true, 'Converting all ' + num(font.numGlyphs) + ' glyphs…');
+      try {
+        const full = await DotFont.convert(font, p, {
+          pause, cancelled: () => my !== state.gen,
+          onProgress: (d, t) => { if (my === state.gen) progress(d, t); },
+        });
+        if (!full || my !== state.gen) return;
+        state.full = { bytes: full.bytes, key };
+      } catch (e) {
+        setBusy(false, '');
+        showError(e && e.friendly ? e.message : 'Something went wrong while converting this font.');
+        return;
+      }
+      setBusy(false);
+    }
+    const name = outName();
+    try {
+      await dl.save({ filename: name, data: new Blob([state.full.bytes]) });
+      setStatus('Downloaded ' + name + '.');
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'declined') setStatus();
+      else if (code === 'rate_limited') setStatus('A save prompt is already open. Answer it, then try again.');
+      else if (code === 'too_large') setStatus('This font is too large to save from here.');
+      else { state.canSave = false; syncButton(); setStatus(); }
+    }
+  });
+
+  if (window.ResizeObserver) new ResizeObserver(() => draw()).observe(el.box);
+  else window.addEventListener('resize', draw);
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw); } catch (e) { /* older browsers */ }
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  if (el.box.clientWidth < 560) el.px.value = 60;
+  syncOutputs();
+  draw();
+  const bin = atob(SAMPLE), bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  loadBuffer(bytes.buffer, 'Poppins-Regular.ttf', true);
+})();
+</script>
+
+</body>
+</html>
